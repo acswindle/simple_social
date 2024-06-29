@@ -9,5 +9,17 @@
     <h1>
         Simple Social Media
     </h1>
+    <form hx-post="/post" hx-trigger="submit" hx-target="#posts" hx-swap="innerHTML" hx-ext="json-enc">
+        <label>Post Title</label>
+        <input type="text" name="post_title">
+        <label>Post</label>
+        <input type="text" name="post_text">
+        <input type="submit">
+    </form>
+    <div id="posts" hx-trigger="load" hx-get="/posts" hx-swap="innerHTML">
+    
+    </div>
+    <script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
 </body>
 </html>
