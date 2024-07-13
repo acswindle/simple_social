@@ -1,7 +1,7 @@
 import sqlite3
 from sqlite3 import Connection
-from typing import List
-from models import Post, Posts
+from typing import List, Union
+from models import Post, Posts, UserHashed
 
 def get_post(connection:Connection)->Posts:
     with connection:
@@ -27,8 +27,42 @@ def insert_post(connection:Connection,
             post.model_dump()
         )
 
+def get_user(
+        connection:Connection,
+        username : str
+)->Union[UserHashed,None]:
+    cur = connection.cursor()
+    cur.execute(
+        '''
+            SELECT 
+                username,
+                salt,
+                hash_password
+            FROM users
+            WHERE username = ?
+        ''', (username,)
+    )
+    user = cur.fetchone()
+    if user is None:
+        return None
+    return UserHashed(**dict(user))
+    
+
+def create_user(connection:Connection,
+                user : UserHashed)->bool:
+    cur = connection.cursor()
+    cur.execute(
+        '''
+        INSERT INTO users (username,salt,hash_password)
+        VALUES 
+        ( :username , :salt , :hash_password);
+        ''',
+    user.model_dump()
+    )
+    connection.commit()
+    return True
 
 if __name__ == "__main__":
     connection = sqlite3.connect('social.db')
     connection.row_factory = sqlite3.Row
-    print(get_post(connection))
+    print(get_user(connection,'test'))
