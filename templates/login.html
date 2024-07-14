@@ -7,7 +7,14 @@
 </head>
 <body>
     <h1>Login to Simple Social Media</h1>
-    <form action="/signup" method="post">
+    {% if incorrect %}
+    <div>
+        <p>
+            Incorrect Username or Password
+        </p>
+    </div>
+    {% endif %}
+    <form action="/login" method="post">
         <label for="username">Username</label>
         <input type="text" name="username">
         <label for="password">Password</label>

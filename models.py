@@ -19,3 +19,6 @@ class UserHashed(BaseModel):
     username : str
     salt : str
     hash_password : str
+
+class UserHashedIndex(UserHashed):
+    user_id : int

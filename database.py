@@ -1,7 +1,7 @@
 import sqlite3
 from sqlite3 import Connection
 from typing import List, Union
-from models import Post, Posts, UserHashed
+from models import Post, Posts, UserHashed, UserHashedIndex
 
 def get_post(connection:Connection)->Posts:
     with connection:
@@ -30,11 +30,12 @@ def insert_post(connection:Connection,
 def get_user(
         connection:Connection,
         username : str
-)->Union[UserHashed,None]:
+)->Union[UserHashedIndex,None]:
     cur = connection.cursor()
     cur.execute(
         '''
             SELECT 
+                user_id,
                 username,
                 salt,
                 hash_password
@@ -45,7 +46,7 @@ def get_user(
     user = cur.fetchone()
     if user is None:
         return None
-    return UserHashed(**dict(user))
+    return UserHashedIndex(**dict(user))
     
 
 def create_user(connection:Connection,
