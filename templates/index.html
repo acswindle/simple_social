@@ -1,42 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Social Media</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.1/css/bulma.min.css">
-</head>
-
-<body>
-    <div class="columns">
-        <div class="column is-half is-offset-one-quarter">
-
-            <div class="card">
-                <header class="card-header">
-                    <p class="card-header-title">
-                        Simple Social Media
-                    </p>
-                </header>
-                <div class="card-content">
-                    <form hx-post="/post" hx-trigger="submit" hx-target="#posts" hx-swap="innerHTML" hx-ext="json-enc">
-                        <label class="label">Post Title</label>
-                        <input type="text" name="post_title" class="input">
-                        <label class="label">Post</label>
-                        <input type="text" name="post_text" class="input">
-                        <input type="submit" class="button">
-                    </form>
-                </div>
-            </div>
-            <div id="posts" hx-trigger="load" hx-get="/posts" hx-swap="innerHTML">
-
-            </div>
-        </div>
+{%extends "base.html" %}
+{%block content %}
+<div class="card">
+    <header class="card-header">
+        <p class="card-header-title">
+            Simple Social Media
+        </p>
+    </header>
+    <div class="card-content">
+        <form hx-post="/post" hx-trigger="submit" hx-target="#posts" hx-swap="innerHTML" hx-ext="json-enc">
+            <label class="label">Post Title</label>
+            <input type="text" name="post_title" class="input">
+            <label class="label">Post</label>
+            <input type="text" name="post_text" class="input">
+            <input type="submit" class="button">
+        </form>
     </div>
-    <script src="https://unpkg.com/htmx.org@2.0.0"
-        integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw"
-        crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
-</body>
-
-</html>
+</div>
+{%endblock %}
+<div id="posts" hx-trigger="load" hx-get="/posts" hx-swap="innerHTML">
