@@ -1,12 +1,10 @@
 {%extends 'base.html' %}
 {%block content %}
 <h1>Login to Simple Social Media</h1>
-{% if incorrect %}
 <div>
     <p>
         Incorrect Username or Password
     </p>
-    {% include "user_form.html" %}
+    {% include 'user_form.html' %}
 </div>
-{% endif %}
 {%endblock %}

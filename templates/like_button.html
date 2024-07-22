@@ -1,0 +1,13 @@
+<a class="card-footer-item button 
+{%if post.user_liked %}
+is-success
+{%endif %}
+"
+hx-post="/like"
+hx-trigger="click"
+hx-vals='{"post_id" : {{post.post_id}}}'
+hx-ext="json-enc"
+hx-target="#post_card_{{post.post_id}}"
+class="card-footer-item">
+Like
+</a>

@@ -1,15 +1,3 @@
 {% for post in posts %}
-<div class='card'>
-    <header class='card-header'>
-
-        <h3>
-            {{ post.post_title }}
-        </h3>
-    </header>
-    <div class="card-content">
-        <p>
-            {{ post.post_text }}
-        </p>
-    </div>
-</div>
+    {%include 'post.html' %}
 {% endfor %}

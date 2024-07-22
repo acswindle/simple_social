@@ -1,0 +1,9 @@
+<p>
+    {%if not post.num_likes %}
+    No like
+    {%elif post.num_likes == 1%}
+    1 like
+    {%else %}
+    {{ post.num_likes }} likes
+    {%endif %}
+</p>

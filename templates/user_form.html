@@ -1,4 +1,10 @@
-<form action="/login" method="post">
+<form action=
+        {%if signup %}
+        "/signup" 
+        {%else %}
+        "/login"
+        {%endif %}
+        method="post">
     <label for="username">Username</label>
     <input type="text" name="username" class="input">
     <label for="password">Password</label>

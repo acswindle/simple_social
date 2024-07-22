@@ -1,0 +1,15 @@
+<div class='card' id="post_card_{{post.post_id}}">
+    <header class='card-header'>
+
+        <h3>
+            {{ post.post_title }}
+        </h3>
+    </header>
+    <div class="card-content">
+        <p>
+            {{ post.post_text }}
+        </p>
+        {%include 'like_counter.html' %}
+    </div>
+    {%include 'post_footer.html' %}
+</div>
