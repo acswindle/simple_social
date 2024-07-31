@@ -1,0 +1,8 @@
+<form hx-post="/add_comment_{{ post.post_id }}" hx-trigger="submit" 
+      hx-target="#post_card_{{ post.post_id }}"  hx-ext="json-enc">
+    <label class="label">Comment Title</label>
+    <input type="text" name="post_title" class="input">
+    <label class="label">Comment</label>
+    <input type="text" name="post_text" class="input">
+    <input type="submit" class="button" value="Add Comment">
+</form>

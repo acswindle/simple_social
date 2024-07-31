@@ -1,0 +1,9 @@
+<p>
+    {%if not post.number_comments %}
+    No comments
+    {%else %}
+    <a href="/get_thread{{ post.post_id }}">
+        See comment{%if post.number_comments > 1 %}s{%endif %}
+    </a>
+    {%endif %}
+</p>

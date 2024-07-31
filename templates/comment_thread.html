@@ -1,0 +1,9 @@
+{%extends "base.html" %}
+{%block content %}
+{% for post in main_post.posts %}
+    {%include 'post.html' %}
+{% endfor %}
+{% for post in comments.posts %}
+    {%include 'post.html' %}
+{% endfor %}
+{%endblock %}

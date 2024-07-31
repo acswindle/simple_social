@@ -10,6 +10,10 @@
             {{ post.post_text }}
         </p>
         {%include 'like_counter.html' %}
+        {%include 'comment_counter.html' %}
+        {%if comment_form %}
+            {%include 'comment_form.html' %}
+        {%endif %}
     </div>
     {%include 'post_footer.html' %}
 </div>

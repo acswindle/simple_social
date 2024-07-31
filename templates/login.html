@@ -2,9 +2,11 @@
 {%block content %}
 <h1>Login to Simple Social Media</h1>
 <div>
+    {%if incorrect %}
     <p>
         Incorrect Username or Password
     </p>
+    {%endif %}
     {% include 'user_form.html' %}
 </div>
 {%endblock %}

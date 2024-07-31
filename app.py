@@ -1,11 +1,12 @@
 from fastapi import FastAPI , Form, status, Depends, Cookie
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
-from fastapi.security import OAuth2
+from fastapi.security import OAuth2, OAuth2PasswordBearer
 from fastapi.responses import HTMLResponse, RedirectResponse
 from database import (get_post, insert_post, create_user , get_user, 
-                      add_like , get_single_post, check_like, delete_like)
-from models import Posts, Post, UserPost, User, UserHashed, Like, PostId
+                      add_like , get_single_post, check_like, delete_like,
+                      add_comment, get_comments)
+from models import Posts, Post, UserPost, UserPostId, UserHashed, Like, PostId
 from sqlite3 import Connection, Row
 from secrets import token_hex
 from passlib.hash import pbkdf2_sha256
@@ -27,13 +28,13 @@ def decrypt_access_token(access_token:str):
         data = jwt.decode(token,JWT_KEY,[ALGORITHM])
         return data
 
-
 class OAuthCookie(OAuth2):
     def __call__(self,request:Request)->int:
         data = decrypt_access_token(request.cookies.get('access_token'))
         return data['user_id']
 
 oauth_cookie = OAuthCookie()
+
 
 @app.get('/')
 async def home(request : Request,
@@ -62,7 +63,7 @@ async def posts(request: Request,
 
 @app.post('/post')
 async def add_post(post : UserPost, request : Request, user_id:int = Depends(oauth_cookie))->HTMLResponse:
-    post = Post(user_id=user_id,**post.model_dump())
+    post = UserPostId(user_id=user_id,**post.model_dump())
     insert_post(connection,post)
     context = {'post_added' : True}
     return templates.TemplateResponse(request, './add_post.html', context=context)
@@ -86,9 +87,11 @@ async def login(request :Request,
 @app.post('/login')
 async def user_login(username : Annotated[str,Form()], password : Annotated[str,Form()], request : Request)->HTMLResponse:
     user =  get_user(connection,username) 
+    if user is None:
+        return templates.TemplateResponse(request,'./login.html',context={'incorrect' : True})
     correct_password = pbkdf2_sha256.verify(password + user.salt, user.hash_password)
-    if user is None or not correct_password:
-        return templates.TemplateResponse(request,'./login',context={'incorrect' : True})
+    if not correct_password:
+        return templates.TemplateResponse(request,'./login.html',context={'incorrect' : True})
     token = jwt.encode({
         'username' : username,
         'user_id' : user.user_id
@@ -119,6 +122,44 @@ async def upload_like(post_id:PostId, request : Request, user_id : int = Depends
     context = {'post' : context}
     context['login'] = True
     return templates.TemplateResponse(request,'./post.html',context=context)
+
+@app.get('/add_comment_form_{post_id}')
+async def add_comment_form(post_id:int,request : Request, user_id : int = Depends(oauth_cookie))->HTMLResponse:
+    context = get_single_post(connection,post_id,user_id).model_dump()
+    context = {'post' : context}
+    context['comment_form'] = True
+    context['login'] = True
+    return templates.TemplateResponse(request,'./post.html',context=context)
+
+@app.post('/add_comment_{post_id}')
+async def add_comment_form(post_id:int,
+                           request : Request, 
+                           post : UserPost,
+                           user_id : int = Depends(oauth_cookie),
+                           )->HTMLResponse:
+    post = UserPostId(user_id=user_id, **post.model_dump())
+    comment_id  = insert_post(connection,post)
+    add_comment(connection,comment_id,post_id)
+    context = get_single_post(connection,post_id,user_id).model_dump()
+    context = {'post' : context}
+    context['comment_form'] = False
+    context['login'] = True
+    return templates.TemplateResponse(request,'./post.html',context=context)
+
+@app.get('/get_thread{post_id}')
+async def get_thread(post_id:int,
+                     request:Request,
+                     access_token : Annotated[str|None,Cookie()] = None)->HTMLResponse:
+    user_id = None
+    context = {}
+    if access_token:
+        user_id = decrypt_access_token(access_token)['user_id']
+        context['login'] = True
+    context['main_post'] = {'posts' : [get_single_post(connection,post_id,user_id).model_dump()]}
+    # get the post and comments for the post_id
+    comments = get_comments(connection,post_id,user_id).model_dump()
+    context['comments'] = comments
+    return templates.TemplateResponse(request,'./comment_thread.html',context=context)
 
 @app.post('/signup')
 async def add_user(username : Annotated[str,Form()], password : Annotated[str,Form()], request : Request)->HTMLResponse:

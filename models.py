@@ -5,11 +5,14 @@ class UserPost(BaseModel):
     post_title : str
     post_text : str
 
-class Post(UserPost):
-    post_id : int
+class UserPostId(UserPost):
     user_id : int
+
+class Post(UserPostId):
+    post_id : int
     num_likes : None|int
     user_liked : None|int
+    number_comments : None|int
 
 class Posts(BaseModel):
     posts : List[Post]
