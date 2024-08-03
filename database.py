@@ -13,7 +13,7 @@ def get_post(connection:Connection,
         cur = cur.execute(
                 '''
                 WITH post_page AS (
-                SELECT post_id, post_title, post_text, user_id
+                SELECT post_id, post_title, post_text, user_id, post_image
                 FROM posts
                 LIMIT :limit
                 OFFSET :offset),
@@ -34,7 +34,7 @@ def get_post(connection:Connection,
                 comments
                 GROUP BY 1
                 )
-                SELECT post_title, post_text, p.user_id user_id, 
+                SELECT post_title, post_text, p.user_id user_id, post_image,
                         num_likes, p.post_id post_id, u.user_id user_liked,
                         number_comments
                 FROM post_page p
@@ -55,13 +55,13 @@ def get_post(connection:Connection,
 
 def get_single_post(connection:Connection,
              post_id:int,
-             user_id:int)->Posts:
+             user_id:int|None)->Post:
     with connection:
         cur = connection.cursor()
         cur = cur.execute(
                 '''
                 WITH post_page AS (
-                SELECT post_id, post_title, post_text, user_id
+                SELECT post_id, post_title, post_text, user_id, post_image
                 FROM posts
                 WHERE post_id = :post_id
                 ),
@@ -80,7 +80,8 @@ def get_single_post(connection:Connection,
                     FROM comments
                     WHERE post_for_id = :post_id
                 )
-                SELECT post_title, post_text, p.user_id user_id, num_likes, user_liked, p.post_id post_id, number_comments
+                SELECT post_title, post_text, p.user_id user_id, post_image,
+                        num_likes, user_liked, p.post_id post_id, number_comments
                 FROM post_page p
                 LEFT JOIN like_count l
                 USING (post_id)
@@ -98,17 +99,18 @@ def get_single_post(connection:Connection,
         return Post.model_validate(dict(cur.fetchone()))
 
 def insert_post(connection:Connection,
-                post : UserPostId):
+                post : UserPostId)->int:
     with connection:
         cur = connection.cursor()
         cur.execute(
             '''
-            INSERT INTO posts (post_title,post_text,user_id)
+            INSERT INTO posts (post_title,post_text,user_id, post_image)
             VALUES 
-            ( :post_title , :post_text , :user_id )
+            ( :post_title , :post_text , :user_id , :post_image)
             ''',
             post.model_dump()
         )
+    assert cur.lastrowid is not None, "Error processing post"
     return cur.lastrowid
 
 def get_user(
@@ -207,7 +209,7 @@ def get_comments(
         WHERE post_for_id = :post_id
         ),
         post_page AS (
-        SELECT post_id, post_title, post_text, user_id
+        SELECT post_id, post_title, post_text, user_id, post_image
         FROM posts
         WHERE post_id IN (SELECT post_id FROM get_comments)
         ),
@@ -230,7 +232,7 @@ def get_comments(
             GROUP BY 1
         )
         SELECT post_title, post_text, p.user_id user_id, num_likes,
-          user_liked, p.post_id post_id, number_comments
+          user_liked, p.post_id post_id, number_comments, post_image
         FROM post_page p
         LEFT JOIN like_count l
         USING (post_id)

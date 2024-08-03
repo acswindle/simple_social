@@ -2,8 +2,17 @@
     {%if not post.number_comments %}
     No comments
     {%else %}
-    <a href="/get_thread{{ post.post_id }}">
-        See comment{%if post.number_comments > 1 %}s{%endif %}
+    <a 
+    hx-target="#post_card_{{ post.post_id }}"
+    hx-get=
+    {%if post.hide_see_comments %}
+        "/hide_thread{{ post.post_id }}"
+    {%else %}
+        "/get_thread{{ post.post_id }}"
+    {%endif %}
+    >
+    {%if post.hide_see_comments %} Hide {%else %} See {%endif %}
+       comment{%if post.number_comments > 1 %}s{%endif %}
     </a>
     {%endif %}
 </p>

@@ -9,5 +9,7 @@
     <input type="text" name="username" class="input">
     <label for="password">Password</label>
     <input type="password" name="password" class="input">
-    <input type="submit" class="button">
+    <input type="submit" class="button" 
+    value= {%if signup %} "Signup" {%else %} "Login" {%endif %}
+    >
 </form>

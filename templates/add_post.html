@@ -2,11 +2,16 @@
     {%if post_added %}
     <p class="has-text-success">Post Added!</p>
     {%endif %}
-    <form hx-post="/post" hx-trigger="submit" hx-target="#add_post"  hx-ext="json-enc">
+    <form hx-post="/post" hx-trigger="submit" 
+      hx-target="#add_post" 
+      hx-encoding = "multipart/form-data"
+      hx-swap='outerHTML'
+      >
         <label class="label">Post Title</label>
         <input type="text" name="post_title" class="input">
         <label class="label">Post</label>
         <input type="text" name="post_text" class="input">
+        <input type="file" name="post_image" class="input">
         <input type="submit" class="button" value="Add Post">
     </form>
 </div>
