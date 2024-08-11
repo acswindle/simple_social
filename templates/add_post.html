@@ -1,17 +1,34 @@
 <div class="card-content" id="add_post">
-    {%if post_added %}
-    <p class="has-text-success">Post Added!</p>
-    {%endif %}
+  {%if post_added %}
+  <div class="modal is-active" id="post_added_modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title has-text-success has-text-centered">Post Added!</p>
+    </header>
+  </div>
+</div>
+  <script>
+    setTimeout(
+      () => {
+        document.getElementById("post_added_modal").classList.toggle("is-active");
+      }, 2000
+    );
+  </script>
+  {%endif %}
     <form hx-post="/post" hx-trigger="submit" 
       hx-target="#add_post" 
       hx-encoding = "multipart/form-data"
       hx-swap='outerHTML'
+      hx-disabled-elt='find .button'
+      hx-indicator="find img"
       >
         <label class="label">Post Title</label>
         <input type="text" name="post_title" class="input">
         <label class="label">Post</label>
         <input type="text" name="post_text" class="input">
         <input type="file" name="post_image" class="input">
-        <input type="submit" class="button" value="Add Post">
+        <input type="submit" class="button" id="submit-button" value="Add Post">
+        <img src="/static/spinners/90-ring-with-bg.svg" class="htmx-indicator">
     </form>
 </div>

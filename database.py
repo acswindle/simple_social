@@ -1,17 +1,17 @@
 import sqlite3
 from sqlite3 import Connection
-from typing import List, Union
+from typing import Union
 from models import Post, Posts, UserHashed, UserHashedIndex, Like, UserPostId
 
-def get_post(connection:Connection,
-             user_id:int|None = None,
-             limit:int=10,
-             page:int=0)->Posts:
-    offset = limit*page
+
+def get_post(
+    connection: Connection, user_id: int | None = None, limit: int = 10, page: int = 0
+) -> Posts:
+    offset = limit * page
     with connection:
         cur = connection.cursor()
         cur = cur.execute(
-                '''
+            """
                 WITH post_page AS (
                 SELECT post_id, post_title, post_text, user_id, post_image
                 FROM posts
@@ -44,22 +44,21 @@ def get_post(connection:Connection,
                 USING (post_id)
                 LEFT JOIN num_comments n
                 ON (p.post_id = n.post_for_id);
-                ''',
-                {
-                    'limit' : limit,
-                    'offset' : offset,
-                    'user_id' : user_id,
-                }
+                """,
+            {
+                "limit": limit,
+                "offset": offset,
+                "user_id": user_id,
+            },
         )
-        return Posts(posts = [Post.model_validate(dict(post)) for post in cur])
+        return Posts(posts=[Post.model_validate(dict(post)) for post in cur])
 
-def get_single_post(connection:Connection,
-             post_id:int,
-             user_id:int|None)->Post:
+
+def get_single_post(connection: Connection, post_id: int, user_id: int | None) -> Post:
     with connection:
         cur = connection.cursor()
         cur = cur.execute(
-                '''
+            """
                 WITH post_page AS (
                 SELECT post_id, post_title, post_text, user_id, post_image
                 FROM posts
@@ -90,36 +89,34 @@ def get_single_post(connection:Connection,
                 LEFT JOIN num_comments c
                 ON (p.post_id = c.post_for_id)
                 ;
-                ''',
-                {
-                    'post_id' : post_id,
-                    'user_id' : user_id,
-                }
+                """,
+            {
+                "post_id": post_id,
+                "user_id": user_id,
+            },
         )
         return Post.model_validate(dict(cur.fetchone()))
 
-def insert_post(connection:Connection,
-                post : UserPostId)->int:
+
+def insert_post(connection: Connection, post: UserPostId) -> int:
     with connection:
         cur = connection.cursor()
         cur.execute(
-            '''
+            """
             INSERT INTO posts (post_title,post_text,user_id, post_image)
             VALUES 
             ( :post_title , :post_text , :user_id , :post_image)
-            ''',
-            post.model_dump()
+            """,
+            post.model_dump(),
         )
     assert cur.lastrowid is not None, "Error processing post"
     return cur.lastrowid
 
-def get_user(
-        connection:Connection,
-        username : str
-)->Union[UserHashedIndex,None]:
+
+def get_user(connection: Connection, username: str) -> Union[UserHashedIndex, None]:
     cur = connection.cursor()
     cur.execute(
-        '''
+        """
             SELECT 
                 user_id,
                 username,
@@ -127,81 +124,90 @@ def get_user(
                 hash_password
             FROM users
             WHERE username = ?
-        ''', (username,)
+        """,
+        (username,),
     )
     user = cur.fetchone()
     if user is None:
         return None
     return UserHashedIndex(**dict(user))
-    
 
-def create_user(connection:Connection,
-                user : UserHashed)->bool:
+
+def create_user(connection: Connection, user: UserHashed) -> bool:
     cur = connection.cursor()
     cur.execute(
-        '''
+        """
         INSERT INTO users (username,salt,hash_password)
         VALUES 
         ( :username , :salt , :hash_password);
-        ''',
-    user.model_dump()
+        """,
+        user.model_dump(),
     )
     connection.commit()
     return True
 
+
 def add_like(
-        connection:Connection,
-        like:Like,
-)->None:
+    connection: Connection,
+    like: Like,
+) -> None:
     with connection:
         cur = connection.cursor()
         cur.execute(
-            '''
+            """
             INSERT INTO likes (user_id,post_id)
             VALUES (:user_id, :post_id);
-            ''',
-            like.model_dump()
+            """,
+            like.model_dump(),
         )
 
+
 def add_comment(
-        connection:Connection,
-        post_id : int,
-        post_for_id : int,
-)->None:
+    connection: Connection,
+    post_id: int,
+    post_for_id: int,
+) -> None:
     with connection:
         cur = connection.cursor()
-        cur.execute('INSERT INTO comments (post_id,post_for_id) VALUES (?,?)',
-                    (post_id,post_for_id))
+        cur.execute(
+            "INSERT INTO comments (post_id,post_for_id) VALUES (?,?)",
+            (post_id, post_for_id),
+        )
+
 
 def check_like(
-        connection:Connection,
-        like:Like,
-)->bool:
+    connection: Connection,
+    like: Like,
+) -> bool:
     cur = connection.cursor()
     cur.execute(
-        '''
+        """
         SELECT * FROM likes WHERE user_id = :user_id AND post_id = :post_id;
-        ''',
-        like.model_dump()
+        """,
+        like.model_dump(),
     )
     return True if cur.fetchone() is not None else False
 
-def delete_like(
-        connection:Connection,
-        like:Like,
-)->None:
-    cur = connection.cursor()
-    cur.execute('DELETE FROM likes WHERE user_id = :user_id AND post_id = :post_id', 
-                like.model_dump())
 
-def get_comments(
-        connection:Connection,
-        post_id:int,
-        user_id:int|None,
-)->Posts:
+def delete_like(
+    connection: Connection,
+    like: Like,
+) -> None:
     cur = connection.cursor()
     cur.execute(
-        '''
+        "DELETE FROM likes WHERE user_id = :user_id AND post_id = :post_id",
+        like.model_dump(),
+    )
+
+
+def get_comments(
+    connection: Connection,
+    post_id: int,
+    user_id: int | None,
+) -> Posts:
+    cur = connection.cursor()
+    cur.execute(
+        """
         WITH get_comments AS (
         SELECT
         post_id , post_for_id
@@ -241,15 +247,16 @@ def get_comments(
         LEFT JOIN num_comments c
         ON (p.post_id = c.post_for_id)
         ;
-        ''',
+        """,
         {
-            'post_id' : post_id,
-            'user_id' : user_id,
-        }
+            "post_id": post_id,
+            "user_id": user_id,
+        },
     )
-    return Posts(posts = [Post.model_validate(dict(post)) for post in cur])
+    return Posts(posts=[Post.model_validate(dict(post)) for post in cur])
+
 
 if __name__ == "__main__":
-    connection = sqlite3.connect('social.db')
+    connection = sqlite3.connect("social.db")
     connection.row_factory = sqlite3.Row
-    print(get_user(connection,'test'))
+    print(get_user(connection, "test"))
